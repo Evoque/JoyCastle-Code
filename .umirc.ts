@@ -4,7 +4,7 @@ export default defineConfig({
   routes: [
     { path: "/", component: "TaskManager" },
     { path: "/taskmanager", component: "TaskManager" },
-    { path: "/generation", component: "Generation" },
+    { path: "/world", component: "World" },
   ],
   npmClient: 'yarn',
 });

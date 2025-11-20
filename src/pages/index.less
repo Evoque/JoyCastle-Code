@@ -1,4 +1,4 @@
-
+/**********  TaskManager相关 **********/
 .progress {
     margin: 16px 0;
 }
@@ -25,4 +25,105 @@
     overflow-y: auto;
     white-space: pre-wrap;
     word-break: break-all;
+}
+
+/**********  World相关 **********/
+.wContainer {
+    background-color: #8B5A2B;
+    min-height: 800px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    color: white;
+}
+
+.wHeaderBar {
+    background-color: #5D3A1A;
+    width: 90%;
+    max-width: 1000px;
+    padding: 15px 30px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.wInfoTag {
+    background-color: #d6bcfa;
+    color: #333;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.wControlGroup {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.wLabel {
+    font-weight: bold;
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.wGridContainer {
+    display: grid;
+    // grid-template-columns: repeat(var(--grid-size), 1fr);
+    gap: 1px;
+    background-color: #000; 
+    border: 6px solid #1a1a1a;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.wTile {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.1s;
+}
+
+.wSelectionBorder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 3px solid #fbbf24; 
+    z-index: 10;
+    box-shadow: 0 0 8px rgba(251, 191, 36, 0.8);
+}
+
+.wFooterLegend {
+    margin-top: 30px;
+    display: flex;
+    gap: 20px;
+}
+
+.wLegendItem {
+    display: flex;
+    align-items: center;
+    background-color: #5D3A1A;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid #8B5A2B;
+    gap: 10px;
+}
+
+.wColorBox {
+    width: 20px;
+    height: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
