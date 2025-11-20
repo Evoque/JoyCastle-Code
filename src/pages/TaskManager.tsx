@@ -7,6 +7,7 @@ import styles from "./index.less";
 
 export default function HomePage() {
   const [logs, setLogs] = useState<string[]>([]);
+  const [rate, setRate] = useState<number>(0);
 
   async function onStartBtnClick() {
     try {
@@ -35,8 +36,9 @@ export default function HomePage() {
     const results = [];
 
     for (const fileName of fileList) {
-      const p = processSingleFile(fileName).then((res) => { 
+      const p = processFile(fileName).then((res) => { 
         executing.splice(executing.indexOf(p), 1);
+         setRate((prev) => prev + 100 / fileList.length);
         return res;
       });
 
@@ -51,7 +53,7 @@ export default function HomePage() {
     return Promise.all(results);
   }
 
-  async function processSingleFile(fileName: string) {
+  async function processFile(fileName: string) {
     let attempt = 0;
 
     while (attempt <= constants.MAX_RETRIES) {
@@ -123,7 +125,7 @@ export default function HomePage() {
       <Progress
         className={styles.progress}
         strokeColor={{ "0%": "#108ee9", "100%": "#87d068" }}
-        percent={99.9}
+        percent={rate}
       />
 
       {/* 控制台Log区 */}
