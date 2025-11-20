@@ -1,6 +1,7 @@
 import { defineConfig } from "umi";
 
 export default defineConfig({
+  mfsu: false,
   routes: [
     { path: "/", component: "TaskManager" },
     { path: "/taskmanager", component: "TaskManager" },

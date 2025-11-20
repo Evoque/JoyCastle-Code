@@ -126,9 +126,9 @@ export default function WorldMapGenerator() {
               min={0}
               max={100}
               value={params.humidity}
-              onChange={(v) => setParams({ ...params, humidity: v })}
+              onChange={(v?: number) => setParams({ ...params, humidity: v || 0 })}
               formatter={(value) => `${value}%`}
-              parser={(value) => value.replace("%", "")}
+              parser={(value) => Number(value?.replace("%", "")) || 0}
               style={{ width: 70 }}
               size="small"
             />
@@ -140,8 +140,9 @@ export default function WorldMapGenerator() {
               min={0}
               max={100}
               value={params.temperature}
-              onChange={(v) => setParams({ ...params, temperature: v })}
+              onChange={(v?: number) => setParams({ ...params, temperature: v || 0 })}
               formatter={(value) => `${value}%`}
+              parser={(value) => Number(value?.replace("%", "")) || 0}
               style={{ width: 70 }}
               size="small"
             />
@@ -153,7 +154,7 @@ export default function WorldMapGenerator() {
               min={0}
               max={100}
               value={params.stability}
-              onChange={(v) => setParams({ ...params, stability: v })}
+              onChange={(v?: number) => setParams({ ...params, stability: v || 0 })}
               formatter={(value) => `${value}%`}
               style={{ width: 70 }}
               size="small"
@@ -181,7 +182,7 @@ export default function WorldMapGenerator() {
         className={styles.wGridContainer}
         // style={oldStyles.gridContainer}
         style={{ gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)` }}
-        onMouseLeave={() => setHoveredBlock(null)}
+        onMouseLeave={() => setHoveredBlock(undefined)}
       >
         {grid.map((block) => {
           const isSelected =

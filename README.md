@@ -12,3 +12,6 @@ JoyCastle Test Code
 
 ## 题目1:任务处理器
 效果如下图: ![任务处理器运行效果](./src/assets/test1.jpg)
+
+## 题目2:生物群系生成系统
+效果如下图：![生物群系生成系统运行效果](./src/assets/test2.jpg)
