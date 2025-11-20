@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button, InputNumber, message } from "antd";
 import { Globe, Trees, Mountain, Waves, Sun, Sprout } from "lucide-react";
 
@@ -12,7 +12,7 @@ interface GridBlock {
 }
 
 // 定义地形类型、颜色和图标
-const TERRAIN_TYPES = {
+const TERRAIN_TYPES: any = {
   FOREST: {
     id: "forest",
     label: "森林 (Forest)",
@@ -45,37 +45,114 @@ const TERRAIN_TYPES = {
   },
 };
 
+const TERRAIN_TYPES_KEYS = Object.keys(TERRAIN_TYPES);
+
 // 简单的网格大小， 默认10*10
 const GRID_SIZE = 10;
 
 export default function WorldMapGenerator() {
   const [grid, setGrid] = useState<GridBlock[]>([]);
-  const [params, setParams] = useState({
-    humidity: 15,
-    temperature: 15,
-    stability: 25,
-  });
   const [hoveredBlock, setHoveredBlock] = useState<GridBlock>();
   const [selectedBlock, setSelectedBlock] = useState<GridBlock>({ x: 0, y: 0 }); // 默认选中图中的位置
+
+  // 气候参数状态
+  const [moistureSpread, setMoistureSpread] = useState(15); // 湿度传播 (西侧影响)
+  const [tempSpread, setTempSpread] = useState(15); // 温度传播 (北侧影响)
+  const [stability, setStability] = useState(25); // 气候稳定 (相同加成)
 
   useEffect(() => {
     generateWorld();
   }, []);
 
-  /** 生成随机世界地图数据 */
-  const generateWorld = () => {
+  /** 生成算法
+   *  世界种⼦在起始区块 (0,0) 随机⽣成任意⽣物群系
+   * 1. 西侧相邻 -> moisture_spread%
+   * 2. 北侧相邻 -> temperature_spread%
+   * 3. 当西侧和北侧相同时，为"⽓候稳定区"，影响强度为 climate_stability%
+   * 4. 基础⽣成概率：⾃然出现率 20%
+   * 5. 剩余平均分配
+   */
+  const generateWorld = useCallback(() => {
     const newGrid = [];
-    const types = Object.values(TERRAIN_TYPES);
 
-    for (let y = 0; y < GRID_SIZE; y++) {
-      for (let x = 0; x < GRID_SIZE; x++) {
-        const randomType = types[Math.floor(Math.random() * types.length)];
-        newGrid.push({ x, y, type: randomType, id: `${x}-${y}` });
+    // 按行遍历
+    for (let r = 0; r < GRID_SIZE; r++) {
+      const row = [];
+      // 按列遍历
+      for (let c = 0; c < GRID_SIZE; c++) {
+        let weights: Record<string, number> = {};
+
+        // 初始化所权重
+        TERRAIN_TYPES_KEYS.forEach((key) => (weights[key] = 0));
+
+        // 1. 邻居
+        const westNeighbor = c > 0 ? row[c - 1] : null;
+        const northNeighbor = r > 0 ? newGrid[r - 1][c] : null;
+
+        let usedProbability = 0;
+
+        // 2. 计算气候传播影响
+        if (r === 0 && c === 0) {
+          // (0,0) 起始点
+          usedProbability = 0;
+        } else {
+          // 西侧和北侧生物群系相同
+          if (
+            westNeighbor &&
+            northNeighbor &&
+            westNeighbor.type === northNeighbor.type
+          ) {
+            const stableType = westNeighbor.type;
+            weights[stableType] += stability;
+            usedProbability += stability;
+          } else {
+            // 分别计算西侧和北侧的影响
+            if (westNeighbor) {
+              weights[westNeighbor.type] += moistureSpread;
+              usedProbability += moistureSpread;
+            }
+            if (northNeighbor) {
+              weights[northNeighbor.type] += tempSpread;
+              usedProbability += tempSpread;
+            }
+          }
+        }
+
+        // 3. 分配剩余概率 (平均分配给所有类型，作为基础生成率)
+        // 这里的逻辑实现：将 (100 - 已用概率) 平均分给5种群系
+        const remainingProb = Math.max(0, 100 - usedProbability);
+        const baseProbPerBiome = remainingProb / TERRAIN_TYPES_KEYS.length;
+
+        TERRAIN_TYPES_KEYS.forEach((key) => {
+          weights[key] += baseProbPerBiome;
+        });
+
+        // 4. 轮盘赌选择生物群系
+        const randomVal = Math.random() * 100;
+        let accumulated = 0;
+        let selectedType = TERRAIN_TYPES_KEYS[TERRAIN_TYPES_KEYS.length - 1];
+
+        for (const key of TERRAIN_TYPES_KEYS) {
+          accumulated += weights[key];
+          if (randomVal <= accumulated) {
+            selectedType = key;
+            break;
+          }
+        }
+
+        // 将区块推入当前行
+        row.push({
+          x: r,
+          y: c,
+          type: selectedType,
+          data: TERRAIN_TYPES[selectedType],
+        });
       }
+      newGrid.push(row);
     }
+
     setGrid(newGrid);
-    message.success("新世界已生成！");
-  };
+  }, [moistureSpread, tempSpread, stability]);
 
   const handleMouseEnter = (block?: GridBlock) => {
     setHoveredBlock(block);
@@ -85,13 +162,12 @@ export default function WorldMapGenerator() {
     if (block) setSelectedBlock({ x: block.x, y: block.y });
   };
 
-  // 获取当前显示的信息 (优先显示 hover，没有则显示选中)
   const currentBlock =
     hoveredBlock ||
     grid.find((b) => b.x === selectedBlock.x && b.y === selectedBlock.y);
   const infoText = currentBlock
     ? `区块 (${currentBlock.x},${currentBlock.y}): ${
-        currentBlock.type?.label.split(" ")[0] || "未知"
+        currentBlock.type || "未知"
       }`
     : "请选择区块";
 
@@ -108,12 +184,10 @@ export default function WorldMapGenerator() {
               max={100}
               size="small"
               style={{ width: 70 }}
-              value={params.humidity}
+              value={moistureSpread}
               formatter={(value) => `${value}%`}
               parser={(value) => Number(value?.replace("%", "")) || 0}
-              onChange={(v?: number) =>
-                setParams({ ...params, humidity: v || 0 })
-              }
+              onChange={(v?: number) => setMoistureSpread(v || 0)}
             />
           </div>
 
@@ -124,12 +198,10 @@ export default function WorldMapGenerator() {
               max={100}
               size="small"
               style={{ width: 70 }}
-              value={params.temperature}
+              value={tempSpread}
               formatter={(value) => `${value}%`}
               parser={(value) => Number(value?.replace("%", "")) || 0}
-              onChange={(v?: number) =>
-                setParams({ ...params, temperature: v || 0 })
-              }
+              onChange={(v?: number) => setTempSpread(v || 0)}
             />
           </div>
           <div>
@@ -139,11 +211,9 @@ export default function WorldMapGenerator() {
               max={100}
               size="small"
               style={{ width: 70 }}
-              value={params.stability}
+              value={stability}
               formatter={(value) => `${value}%`}
-              onChange={(v?: number) =>
-                setParams({ ...params, stability: v || 0 })
-              }
+              onChange={(v?: number) => setStability(v || 0)}
             />
           </div>
         </div>
@@ -168,24 +238,22 @@ export default function WorldMapGenerator() {
         style={{ gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)` }}
         onMouseLeave={() => setHoveredBlock(undefined)}
       >
-        {grid.map((block) => {
-          const isSelected =
-            selectedBlock.x === block.x && selectedBlock.y === block.y;
-          return (
-            <div
-              key={block.id}
-              className={styles.wTile}
-              style={{
-                backgroundColor: block.type?.color,
-              }}
-              onMouseEnter={() => handleMouseEnter(block)}
-              onClick={() => handleClick(block)}
-            >
-              <div style={{ opacity: 0.7 }}>{block.type?.icon}</div>
-              {isSelected && <div className={styles.wSelectionBorder} />}
-            </div>
-          );
-        })}
+        {grid.map((row, rIndex) =>
+          row.map((block, cIndex) => {
+            return (
+              <div
+                key={`${rIndex}-${cIndex}`}
+                style={{ backgroundColor: TERRAIN_TYPES[block.type]?.color }}
+                onMouseEnter={() => handleMouseEnter(block)}
+                onClick={() => handleClick(block)}
+                className={styles.wTile}
+                title={`(${rIndex},${cIndex}) ${block.data.name}`}
+              >
+                <span className="drop-shadow-md filter">{block.data.icon}</span>
+              </div>
+            );
+          })
+        )}
       </div>
 
       {/* 底部图例 */}
