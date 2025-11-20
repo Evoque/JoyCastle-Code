@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Button, InputNumber, message } from "antd";
 import { Globe, Trees, Mountain, Waves, Sun, Sprout } from "lucide-react";
-import styles from './index.less';
 
+import styles from "./index.less";
 
 interface GridBlock {
   x: number;
@@ -10,25 +10,54 @@ interface GridBlock {
   type?: (typeof TERRAIN_TYPES)[keyof typeof TERRAIN_TYPES];
   id?: string;
 }
- 
+
 // 定义地形类型、颜色和图标
 const TERRAIN_TYPES = {
-  FOREST: { id: "forest", label: "森林 (Forest)", color: "#4ade80", icon: <Trees size={20} color="#064e3b" /> },
-  DESERT: { id: "desert", label: "沙漠 (Desert)", color: "#fde047", icon: <Sun size={20} color="#b45309" /> }, 
-  OCEAN: { id: "ocean", label: "海洋 (Ocean)", color: "#60a5fa", icon: <Waves size={20} color="#1e3a8a" /> },
-  MOUNTAIN: { id: "mountain", label: "山地 (Mountain)", color: "#9ca3af", icon: <Mountain size={20} color="#374151" /> },
-  GRASS: { id: "grass", label: "平原 (Grass)", color: "#bef264", icon: <Sprout size={20} color="#65a30d" /> },
+  FOREST: {
+    id: "forest",
+    label: "森林 (Forest)",
+    color: "#4ade80",
+    icon: <Trees size={20} color="#064e3b" />,
+  },
+  DESERT: {
+    id: "desert",
+    label: "沙漠 (Desert)",
+    color: "#fde047",
+    icon: <Sun size={20} color="#b45309" />,
+  },
+  OCEAN: {
+    id: "ocean",
+    label: "海洋 (Ocean)",
+    color: "#60a5fa",
+    icon: <Waves size={20} color="#1e3a8a" />,
+  },
+  MOUNTAIN: {
+    id: "mountain",
+    label: "山地 (Mountain)",
+    color: "#9ca3af",
+    icon: <Mountain size={20} color="#374151" />,
+  },
+  GRASS: {
+    id: "grass",
+    label: "平原 (Grass)",
+    color: "#bef264",
+    icon: <Sprout size={20} color="#65a30d" />,
+  },
 };
 
 // 简单的网格大小， 默认10*10
 const GRID_SIZE = 10;
 
-export default function WorldMapGenerator() { 
+export default function WorldMapGenerator() {
   const [grid, setGrid] = useState<GridBlock[]>([]);
-  const [params, setParams] = useState({ humidity: 15, temperature: 15, stability: 25 });
+  const [params, setParams] = useState({
+    humidity: 15,
+    temperature: 15,
+    stability: 25,
+  });
   const [hoveredBlock, setHoveredBlock] = useState<GridBlock>();
-  const [selectedBlock, setSelectedBlock] = useState<GridBlock>({ x: 4, y: 4 }); // 默认选中图中的位置
-  
+  const [selectedBlock, setSelectedBlock] = useState<GridBlock>({ x: 0, y: 0 }); // 默认选中图中的位置
+
   useEffect(() => {
     generateWorld();
   }, []);
@@ -39,20 +68,19 @@ export default function WorldMapGenerator() {
     const types = Object.values(TERRAIN_TYPES);
 
     for (let y = 0; y < GRID_SIZE; y++) {
-      for (let x = 0; x < GRID_SIZE; x++) { 
+      for (let x = 0; x < GRID_SIZE; x++) {
         const randomType = types[Math.floor(Math.random() * types.length)];
         newGrid.push({ x, y, type: randomType, id: `${x}-${y}` });
       }
     }
     setGrid(newGrid);
     message.success("新世界已生成！");
-  }; 
+  };
 
-  
   const handleMouseEnter = (block?: GridBlock) => {
     setHoveredBlock(block);
   };
- 
+
   const handleClick = (block?: GridBlock) => {
     if (block) setSelectedBlock({ x: block.x, y: block.y });
   };
@@ -164,9 +192,13 @@ export default function WorldMapGenerator() {
       <div className={styles.wFooterLegend}>
         {Object.values(TERRAIN_TYPES).map((type) => (
           <div key={type.id} className={styles.wLegendItem}>
-            <div className={styles.wColorBox} style={{ backgroundColor: type.color }} />
-            <span className={styles.wLegendItemContent} >
-              {type.icon}{type.label}
+            <div
+              className={styles.wColorBox}
+              style={{ backgroundColor: type.color }}
+            />
+            <span className={styles.wLegendItemContent}>
+              {type.icon}
+              {type.label}
             </span>
           </div>
         ))}
