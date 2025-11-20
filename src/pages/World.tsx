@@ -68,7 +68,7 @@ export default function WorldMapGenerator() {
     : "请选择区块";
 
   return (
-    <div className={styles.wContainer}> 
+    <div className={styles.wContainer}>
       <div className={styles.wHeaderBar}>
         <div className={styles.wInfoTag}>{infoText}</div>
 
@@ -83,7 +83,9 @@ export default function WorldMapGenerator() {
               value={params.humidity}
               formatter={(value) => `${value}%`}
               parser={(value) => Number(value?.replace("%", "")) || 0}
-              onChange={(v?: number) => setParams({ ...params, humidity: v || 0 })}
+              onChange={(v?: number) =>
+                setParams({ ...params, humidity: v || 0 })
+              }
             />
           </div>
 
@@ -97,9 +99,11 @@ export default function WorldMapGenerator() {
               value={params.temperature}
               formatter={(value) => `${value}%`}
               parser={(value) => Number(value?.replace("%", "")) || 0}
-              onChange={(v?: number) => setParams({ ...params, temperature: v || 0 })}
+              onChange={(v?: number) =>
+                setParams({ ...params, temperature: v || 0 })
+              }
             />
-          </div> 
+          </div>
           <div>
             <span className={styles.wLabel}>气候稳定:</span>
             <InputNumber
@@ -109,7 +113,9 @@ export default function WorldMapGenerator() {
               style={{ width: 70 }}
               value={params.stability}
               formatter={(value) => `${value}%`}
-              onChange={(v?: number) => setParams({ ...params, stability: v || 0 })}
+              onChange={(v?: number) =>
+                setParams({ ...params, stability: v || 0 })
+              }
             />
           </div>
         </div>
@@ -128,7 +134,7 @@ export default function WorldMapGenerator() {
           生成新世界
         </Button>
       </div>
-  
+
       <div
         className={styles.wGridContainer}
         style={{ gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)` }}
@@ -146,8 +152,8 @@ export default function WorldMapGenerator() {
               }}
               onMouseEnter={() => handleMouseEnter(block)}
               onClick={() => handleClick(block)}
-            > 
-              <div style={{ opacity: 0.7 }}>{block.type?.icon}</div> 
+            >
+              <div style={{ opacity: 0.7 }}>{block.type?.icon}</div>
               {isSelected && <div className={styles.wSelectionBorder} />}
             </div>
           );
@@ -156,21 +162,14 @@ export default function WorldMapGenerator() {
 
       {/* 底部图例 */}
       <div className={styles.wFooterLegend}>
-        {Object.values(TERRAIN_TYPES)
-          .filter((t) => t.id !== "grass")
-          .map((type) => (
-            <div key={type.id} className={styles.wLegendItem}>
-              <div
-               className={styles.wColorBox}
-                style={{   backgroundColor: type.color }}
-              ></div>
-              <span
-                style={{ display: "flex", alignItems: "center", gap: "5px" }}
-              >
-                {type.icon} {type.label}
-              </span>
-            </div>
-          ))}
+        {Object.values(TERRAIN_TYPES).map((type) => (
+          <div key={type.id} className={styles.wLegendItem}>
+            <div className={styles.wColorBox} style={{ backgroundColor: type.color }} />
+            <span className={styles.wLegendItemContent} >
+              {type.icon}{type.label}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   );
